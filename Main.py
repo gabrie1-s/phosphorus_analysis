@@ -40,6 +40,8 @@ def gplearn_to_latex(formula, custom_names=None):
             return f"\\log{{{args}}}"
         elif func == "inv":
             return f"\\frac{{1}}{{{args}}}"
+        elif func == "abs":
+            return f"\\left|{args}\\right|"
         else:
             return match.group(0)
 
