@@ -51,12 +51,16 @@ def gplearn_to_latex(formula, custom_names=None):
 
     # Replacing variable names with LaTeX friendly variables
     formula = re.sub(r'X(\d+)', r'X_\1', formula)
-
+    st.write(formula)
+    
     if custom_names is not None:
         for i, custom_name in enumerate(custom_names, start=1):  # Start at 1 because X1 maps to the first variable
             formula = formula.replace(f'X_{i}', custom_name)
+    st.write(formula)
+    st.latex(r'\frac{a}{b}')
 
     return formula
+    
 def plot_results(y_pred, y_tes):
   plt.rcParams["figure.figsize"] = (10,5)
   plt.scatter(range(len(y_pred)), y_pred, c='r')
