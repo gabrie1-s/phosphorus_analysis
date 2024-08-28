@@ -1,5 +1,4 @@
 import streamlit as st
-import import_ipynb
 import GP_Analisys
 
 st.title("Modelos para estudo de concentração do fósforo em açudes")
