@@ -137,7 +137,7 @@ def execute_sr(file_name):
   # Display the captured output in Streamlit
   st.text_area("Etapas de treinamento", output.getvalue(), height=400)
 
-  #st.latex(gplearn_to_latex(str(est_gp._program), custom_names=x.columns))
+  st.latex(gplearn_to_latex(str(est_gp._program), custom_names=x.columns))
 
   dot_data = est_gp._program.export_graphviz()
   st.graphviz_chart(dot_data)
