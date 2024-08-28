@@ -1,7 +1,8 @@
 streamlit
-seaborn
 pandas
 numpy
+seaborn
 scikit-learn
 gplearn
 graphviz
+plotly
