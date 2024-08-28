@@ -49,13 +49,7 @@ def gplearn_to_latex(formula, custom_names=None):
     pattern = re.compile(r'(\w+)\(([^()]+)\)')
     iteration = 0
     while re.search(pattern, formula):
-        st.write(f"Iteration {iteration}: {formula}")
-        new_formula = re.sub(pattern, replace_functions, formula)
-        if new_formula == formula:  # Check if the formula is unchanged
-            st.write("No further changes made; exiting loop.")
-            break
-        formula = new_formula
-        iteration += 1
+        formula = re.sub(pattern, replace_functions, formula)
 
     # Replacing variable names with LaTeX friendly variables
     formula = re.sub(r'X(\d+)', r'X_\1', formula)
