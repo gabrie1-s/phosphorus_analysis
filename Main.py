@@ -42,6 +42,8 @@ def gplearn_to_latex(formula, custom_names=None):
             return f"\\frac{{1}}{{{args}}}"
         elif func == "abs":
             return f"\\left|{args}\\right|"
+        elif func == "neg":
+            return f"-{{{args}}}"
         else:
             return match.group(0)
 
