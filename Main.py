@@ -43,9 +43,11 @@ def gplearn_to_latex(formula, custom_names=None):
         else:
             return match.group(0)
 
+    st.write('1')
     # Regular expression to find function calls with their arguments
     pattern = re.compile(r'(\w+)\(([^()]+)\)')
-    
+    st.write('2')
+    st.latex(r'\frac{a}{b}')
     while re.search(pattern, formula):
         formula = re.sub(pattern, replace_functions, formula)
 
