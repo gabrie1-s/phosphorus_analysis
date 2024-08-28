@@ -6,3 +6,4 @@ scikit-learn
 gplearn
 graphviz
 plotly
+openpyxl
