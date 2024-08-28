@@ -43,23 +43,24 @@ def gplearn_to_latex(formula, custom_names=None):
         else:
             return match.group(0)
 
-    st.write('1')
     # Regular expression to find function calls with their arguments
     pattern = re.compile(r'(\w+)\(([^()]+)\)')
-    st.write('2')
-    st.latex(r'\frac{a}{b}')
+    iteration = 0
     while re.search(pattern, formula):
-        formula = re.sub(pattern, replace_functions, formula)
+        st.write(f"Iteration {iteration}: {formula}")
+        new_formula = re.sub(pattern, replace_functions, formula)
+        if new_formula == formula:  # Check if the formula is unchanged
+            st.write("No further changes made; exiting loop.")
+            break
+        formula = new_formula
+        iteration += 1
 
     # Replacing variable names with LaTeX friendly variables
     formula = re.sub(r'X(\d+)', r'X_\1', formula)
-    st.write(formula)
     
     if custom_names is not None:
         for i, custom_name in enumerate(custom_names, start=1):  # Start at 1 because X1 maps to the first variable
             formula = formula.replace(f'X_{i}', custom_name)
-    st.write(formula)
-    st.latex(r'\frac{a}{b}')
 
     return formula
     
