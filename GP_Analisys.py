@@ -178,8 +178,8 @@ def execute_sr(file_name):
     exp = make_function(function=_exp, name='exp', arity=1)
     r2 = make_fitness(function=_r2, greater_is_better=True, wrap=False)
 
-    est_gp = SymbolicRegressor(population_size=100,
-                                generations=2, stopping_criteria=0.99,
+    est_gp = SymbolicRegressor(population_size=10000,
+                                generations=100, stopping_criteria=0.99,
                                 p_crossover=0.6, p_subtree_mutation=0.1,
                                 p_hoist_mutation=0.05, p_point_mutation=0.1,
                                 max_samples=1.0, verbose=1,
