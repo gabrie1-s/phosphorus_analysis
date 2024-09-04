@@ -79,13 +79,15 @@ def gplearn_to_latex(formula):
         elif func == "power":
             return f"{{{args.split(',')[0]}}}^{{{args.split(',')[1]}}}"
         elif func == "log":
-            return f"\\log{{{args}}}"
+            return f"\\log\\left({{{args}}}\\right)"
         elif func == "inv":
             return f"\\frac{{1}}{{{args}}}"
         elif func == "abs":
             return f"\\left|{args}\\right|"
         elif func == "neg":
             return f"-{{{args}}}"
+        elif func == "exp":
+            return f"e^{{{args}}}"
         else:
             return match.group(0)
 
@@ -94,6 +96,7 @@ def gplearn_to_latex(formula):
     
     while re.search(pattern, formula):
         formula = re.sub(pattern, replace_functions, formula)
+        st.write(formula)
 
     formula = re.sub(r'X(\d+)', lambda m: f'X_{{{int(m.group(1)) + 1}}}', formula)
 
@@ -235,10 +238,46 @@ def predict_with_best_model(file_name, model_file=None):
 
     if model_file is None:
         # Load the default model and min_max_values from files
-        with open('best_sr.pkl', 'rb') as f:
-            model = pickle.load(f)
-        with open('min_max_values.pkl', 'rb') as f:
-            min_max_values = pickle.load(f)
+        # with open('est_gp_model_1.pkl', 'rb') as f:
+        #     model = pickle.load(f)
+
+        train_dataset = pd.read_excel("../Dados_B1_B7.xlsx")
+        tdx = train_dataset[train_dataset.columns[:7]]
+        tdy = train_dataset[train_dataset.columns[-1]]
+
+        min_max_values = [tdx.min(), tdx.max(), tdy.min(), tdy.max()]
+        tdx = (tdx - tdx.min())/(tdx.max() - tdx.min())
+        tdy = (tdy - tdy.min())/(tdy.max() - tdy.min())
+
+
+        phm = 0.06715839141819369; ppm = 0.04753718444355231 ;psm = 0.03765402747517174
+        pc = 3.1606815034143736; ts = 0.12092886880198785
+
+        p_cross = 1 - (psm + phm + ppm)
+
+        power = make_function(function=_power, name='power', arity=2)
+        exp = make_function(function=_exp, name='exp', arity=1)
+        r2 = make_fitness(function=_r2, greater_is_better=True, wrap=False)
+
+        with st.spinner("Recuperando o modelo, por favor aguarde..."):
+
+            model = SymbolicRegressor(population_size=2000,
+                                        tournament_size=int(ts*2000),
+                                        generations=200, stopping_criteria=0.99,
+                                        p_crossover=p_cross, p_subtree_mutation=psm,
+                                        p_hoist_mutation=phm, p_point_mutation=ppm,
+                                        verbose=1, parsimony_coefficient=0.001*pc, 
+                                        random_state=0, function_set=['add','sub','mul','div','log','inv','neg','sqrt',power, exp],
+                                        metric=r2, n_jobs=1)
+
+            model.fit(np.array(tdx), np.array(tdy))
+            del train_dataset, tdx, tdy
+
+
+        # with open('min_max_values.pkl', 'rb') as f:
+        #     min_max_values = pickle.load(f)
+        #     min_max_values = list(min_max_values.values())
+
     else:
         if isinstance(model_file, SymbolicRegressor):
             # model_file is already a model object, so use it directly
@@ -265,10 +304,14 @@ def predict_with_best_model(file_name, model_file=None):
     x = fosforo[fosforo.columns[:7]]
     y = fosforo['P']
 
-    show_normalization_formulas(x_min, x_max, y_min, y_max)
-    
     x = (x - x_min)/(x_max - x_min)
     y_pred = model.predict(x)
+
+    #show_normalization_formulas(x_min, x_max, y_min, y_max)
+    # st.latex(gplearn_to_latex(str(model._program)))
+    dot_data = model._program.export_graphviz()
+    st.graphviz_chart(dot_data)
+    
     
     y_pred = inverse_normalization(y_pred, y_max, y_min)
 
