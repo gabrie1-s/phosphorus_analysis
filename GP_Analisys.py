@@ -263,8 +263,6 @@ def predict_with_best_model(file_name, model_file=None):
                                         metric=r2, n_jobs=1)
 
             model.fit(np.array(tdx), np.array(tdy))
-            del train_dataset, tdx, tdy
-
 
         # with open('min_max_values.pkl', 'rb') as f:
         #     min_max_values = pickle.load(f)
