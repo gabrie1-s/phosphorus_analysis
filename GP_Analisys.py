@@ -241,7 +241,7 @@ def predict_with_best_model(file_name, model_file=None):
         # with open('est_gp_model_1.pkl', 'rb') as f:
         #     model = pickle.load(f)
 
-        train_dataset = pd.read_excel("../Dados_B1_B7.xlsx")
+        train_dataset = pd.read_excel("Dados_B1_B7.xlsx")
         tdx = train_dataset[train_dataset.columns[:7]]
         tdy = train_dataset[train_dataset.columns[-1]]
 
