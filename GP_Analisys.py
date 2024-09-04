@@ -309,6 +309,7 @@ def predict_with_best_model(file_name, model_file=None):
 
     #show_normalization_formulas(x_min, x_max, y_min, y_max)
     # st.latex(gplearn_to_latex(str(model._program)))
+    st.write("Test")
     dot_data = model._program.export_graphviz()
     st.graphviz_chart(dot_data)
     
