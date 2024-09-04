@@ -7,3 +7,8 @@ gplearn
 graphviz
 plotly
 openpyxl
+os
+pickle
+re
+sys
+io
