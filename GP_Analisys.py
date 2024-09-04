@@ -2,23 +2,15 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import io
 import sys
 import re
 import pickle
-from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.metrics import r2_score, mean_absolute_percentage_error
 from gplearn.genetic import SymbolicRegressor, SymbolicTransformer
 from gplearn.functions import make_function
 from gplearn.fitness import make_fitness
-
-import os
-import pdb
-from sklearn import metrics
-import plotly.graph_objects as go
-import graphviz
 
 def gplearn_to_math(formula):
     def replace_functions(match):
