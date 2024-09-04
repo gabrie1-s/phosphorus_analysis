@@ -285,7 +285,10 @@ def predict_with_best_model(file_name, model_file=None):
             with open(model_file, 'rb') as f:
                 model, min_max_values = pickle.load(f)
             
+    st.write("Test1")
     x_min, x_max, y_min, y_max = min_max_values
+    st.write("Test2")
+
     x_min = np.array(x_min)
     x_max = np.array(x_max)
 
@@ -295,13 +298,14 @@ def predict_with_best_model(file_name, model_file=None):
     fosforo.columns = ['X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'P']
     x = fosforo[fosforo.columns[:7]]
     y = fosforo['P']
-
+    
     x = (x - x_min)/(x_max - x_min)
+    st.write("Test3")
+
     y_pred = model.predict(x)
 
     #show_normalization_formulas(x_min, x_max, y_min, y_max)
     # st.latex(gplearn_to_latex(str(model._program)))
-    st.write("Test")
     dot_data = model._program.export_graphviz()
     st.graphviz_chart(dot_data)
     
