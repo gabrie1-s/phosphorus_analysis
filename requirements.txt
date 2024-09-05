@@ -1,10 +1,10 @@
+python==3.10
 streamlit
 pandas
 numpy
 matplotlib
-h5py
-cloudpickle
+cloudpickle==3.0.0
 scikit-learn
-gplearn
+gplearn==0.4.2
 graphviz
 openpyxl
