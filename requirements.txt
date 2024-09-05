@@ -6,3 +6,4 @@ gplearn
 graphviz
 openpyxl
 joblib
+matplotlib
