@@ -283,7 +283,8 @@ def predict_with_best_model(file_name, model_file=None):
         else:
             # If model_file is a file path, load the model and min_max_values
             model, min_max_values = joblib.load(model_file)
-            
+
+    st.write('Teste1')
     x_min, x_max, y_min, y_max = min_max_values
     x_min = np.array(x_min)
     x_max = np.array(x_max)
