@@ -5,7 +5,7 @@ import numpy as np
 import io
 import sys
 import re
-import pickle
+import cloudpickle
 import gzip
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.metrics import r2_score, mean_absolute_percentage_error
@@ -275,16 +275,16 @@ def predict_with_best_model(file_name, model_file=None):
             # model_file is already a model object, so use it directly
             model = model_file
             with open('min_max_values.pkl', 'rb') as f:
-                min_max_values = pickle.load(f)
+                min_max_values = cloudpickle.load(f)
         elif isinstance(model_file, st.runtime.uploaded_file_manager.UploadedFile):
-            # If model_file is an UploadedFile object, load it using pickle
+            # If model_file is an UploadedFile object, load it using cloudpickle
             model_file.seek(0)
             with gzip.open(model_file, 'rb') as f:
-                model, min_max_values = pickle.load(f)
+                model, min_max_values = cloudpickle.load(f)
         else:
             # If model_file is a file path, load the model and min_max_values
             with gzip.open(model_file, 'rb') as f:
-                model, min_max_values = pickle.load(f)
+                model, min_max_values = cloudpickle.load(f)
             
     x_min, x_max, y_min, y_max = min_max_values
     x_min = np.array(x_min)
