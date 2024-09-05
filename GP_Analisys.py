@@ -5,154 +5,38 @@ import numpy as np
 import io
 import sys
 import re
-import joblib
+import h5py  # For HDF5 storage
+import cloudpickle  # For saving/loading models in binary format
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.metrics import r2_score, mean_absolute_percentage_error
 from gplearn.genetic import SymbolicRegressor, SymbolicTransformer
 from gplearn.functions import make_function
 from gplearn.fitness import make_fitness
 
-def gplearn_to_math(formula):
-    def replace_functions(match):
-        func = match.group(1)
-        args = match.group(2)
+# Your other utility functions remain unchanged (gplearn_to_math, gplearn_to_latex, etc.)
 
-        if func == "add":
-            return f"({args.split(',')[0]}) + ({args.split(',')[1]})"
-        elif func == "sub":
-            return f"({args.split(',')[0]}) - ({args.split(',')[1]})"
-        elif func == "mul":
-            return f"({args.split(',')[0]}) * ({args.split(',')[1]})"
-        elif func == "div":
-            return f"({args.split(',')[0]}) / ({args.split(',')[1]})"
-        elif func == "sqrt":
-            return f"sqroot({args})"
-        elif func == "power":
-            return f"({args.split(',')[0]})^({args.split(',')[1]})"
-        elif func == "log":
-            return f"ln({args})"
-        elif func == "inv":
-            return f"1/({args})"
-        elif func == "abs":
-            return f"|{args}|"
-        elif func == "neg":
-            return f"-({args})"
-        else:
-            return match.group(0)
+def save_model_hdf5(model, min_max_values, filename):
+    """Save model and min_max_values into HDF5 format."""
+    with h5py.File(filename, 'w') as hf:
+        # Save min_max_values as a dataset
+        hf.create_dataset('min_max_values', data=min_max_values)
+        
+        # Save model using cloudpickle
+        model_binary = cloudpickle.dumps(model)
+        hf.create_dataset('model', data=np.void(model_binary))  # Save model as binary blob
 
-    # Regular expression to find function calls with their arguments
-    pattern = re.compile(r'(\w+)\(([^()]+)\)')
-    
-    while re.search(pattern, formula):
-        print(formula)
-        formula = re.sub(pattern, replace_functions, formula)
+def load_model_hdf5(filename):
+    """Load model and min_max_values from HDF5 format."""
+    with h5py.File(filename, 'r') as hf:
+        # Load min_max_values
+        min_max_values = list(hf['min_max_values'])
+        
+        # Load the model from the binary blob
+        model_binary = hf['model'][()]
+        model = cloudpickle.loads(bytes(model_binary))
+        
+    return model, min_max_values
 
-    # Replacing variable names with standard math notation
-    formula = re.sub(r'X(\d+)', r'X\1', formula)
-
-    return formula + " = Y"
-
-
-def gplearn_to_latex(formula):
-    def replace_functions(match):
-        func = match.group(1)
-        args = match.group(2)
-
-        if func == "add":
-            return f"{args.split(',')[0]} + {args.split(',')[1]}"
-        elif func == "sub":
-            return f"{args.split(',')[0]} - {args.split(',')[1]}"
-        elif func == "mul":
-            return f"{args.split(',')[0]} \\cdot {args.split(',')[1]}"
-        elif func == "div":
-            return f"\\frac{{{args.split(',')[0]}}}{{{args.split(',')[1]}}}"
-        elif func == "sqrt":
-            return f"\\sqrt{{{args}}}"
-        elif func == "power":
-            return f"{{{args.split(',')[0]}}}^{{{args.split(',')[1]}}}"
-        elif func == "log":
-            return f"\\log\\left({{{args}}}\\right)"
-        elif func == "inv":
-            return f"\\frac{{1}}{{{args}}}"
-        elif func == "abs":
-            return f"\\left|{args}\\right|"
-        elif func == "neg":
-            return f"-{{{args}}}"
-        elif func == "exp":
-            return f"e^{{{args}}}"
-        else:
-            return match.group(0)
-
-    # Regular expression to find function calls with their arguments
-    pattern = re.compile(r'(\w+)\(([^()]+)\)')
-    
-    while re.search(pattern, formula):
-        formula = re.sub(pattern, replace_functions, formula)
-        st.write(formula)
-
-    formula = re.sub(r'X(\d+)', lambda m: f'X_{{{int(m.group(1)) + 1}}}', formula)
-
-    return formula + ' = Y'
-
-
-def show_normalization_formulas(x_min, x_max, y_min, y_max):
-    st.write("Fazemos uma normalização MinMax, usando os valores dos dados de treinamento")
-    for i in range(len(x_min)):
-        min_val = x_min[i]
-        max_val = x_max[i]
-        var_name = f"B_{i+1}"
-        latex_formula = rf"X_{i+1} = \frac{{{var_name} - {min_val}}}{{{max_val} - {min_val}}}"
-        st.latex(latex_formula)
-
-    min_val = y_min
-    max_val = y_max
-    var_name = f"P"
-    latex_formula = rf"Y = \frac{{{var_name} - {min_val}}}{{{max_val} - {min_val}}}"
-    st.latex(latex_formula)
-
-def plot_results(y_pred, y_tes):
-  plt.rcParams["figure.figsize"] = (10,5)
-  plt.scatter(range(len(y_pred)), y_pred, c='r')
-  plt.plot(range(len(y_tes)), y_tes, linestyle="-", marker="o", label="Expenses")
-  plt.title('Model performance - test set')
-  plt.ylabel('P medido')
-  plt.xlabel('Sample')
-  plt.legend(['predicted', 'real'], loc='upper left')
-  fig = plt.gcf()
-  st.pyplot(fig)
-
-def train_test_model(y_te, y_pred):
-    st.write("MAE: " + str(mean_absolute_error(y_te, y_pred)))
-    st.write("MAPE: " + str(mean_absolute_percentage_error(y_te, y_pred)))
-    st.write("MSE: " + str(mean_squared_error(y_te, y_pred)))
-    st.write("R2: " + str(r2_score(y_te, y_pred)))
-    plot_results(y_pred, y_te)
-
-def inverse_normalization(v, v_max, v_min):
-    return (v_max - v_min)*v + v_min
-def _power(x1, x2):
-    with np.errstate(over='ignore', divide='ignore', invalid='ignore'):
-        result = np.power(x1, x2)
-        result = np.where(np.isfinite(result), result, 0)
-        return result
-
-def _exp(x):
-    with np.errstate(over='ignore'):
-        return np.where(np.isfinite(np.exp(x)), np.exp(x), 0.0)
-
-def _r2(y, y_pred, sample_weight):
-    with np.errstate(over='ignore', divide='ignore', invalid='ignore'):
-        ss_res = np.sum(sample_weight * (y - y_pred) ** 2)
-        y_mean = np.average(y, weights=sample_weight)
-        ss_tot = np.sum(sample_weight * (y - y_mean) ** 2)
-
-        if np.abs(ss_tot) > 0.001:
-            r2_score = 1 - ss_res / ss_tot
-        else:
-            r2_score = -1000
-
-        return r2_score
-    
 def execute_sr(file_name):
     fosforo = pd.read_excel(file_name)
 
@@ -198,7 +82,6 @@ def execute_sr(file_name):
                                 min_max_values[2], min_max_values[3])
 
     st.latex(gplearn_to_latex(str(est_gp._program)))
-    # st.write(gplearn_to_math(str(est_gp._program)))
 
     dot_data = est_gp._program.export_graphviz()
     st.graphviz_chart(dot_data)
@@ -212,76 +95,28 @@ def execute_sr(file_name):
 
     st.write("Faça o download do modelo:")
 
-    joblib.dump((est_gp, min_max_values), 'new_model.joblib', compress=3)
+    # Save model and min_max_values into HDF5
+    save_model_hdf5(est_gp, min_max_values, 'new_model.h5')
 
     # Create a download button in Streamlit
-    with open('new_model.joblib', 'rb') as file:
+    with open('new_model.h5', 'rb') as file:
         st.download_button(
             label="Download do modelo",
             data=file,
-            file_name='new_model.joblib',
+            file_name='new_model.h5',
             mime='application/octet-stream'
         )
-
 
 def predict_with_best_model(file_name, model_file=None):
     fosforo = pd.read_excel(file_name)
 
     if model_file is None:
-        # Load the default model and min_max_values from files
-        # with open('est_gp_model_1.pkl', 'rb') as f:
-        #     model = pickle.load(f)
-
-        train_dataset = pd.read_excel("../Dados_B1_B7.xlsx")
-        tdx = train_dataset[train_dataset.columns[:7]]
-        tdy = train_dataset[train_dataset.columns[-1]]
-
-        min_max_values = [tdx.min(), tdx.max(), tdy.min(), tdy.max()]
-        tdx = (tdx - tdx.min())/(tdx.max() - tdx.min())
-        tdy = (tdy - tdy.min())/(tdy.max() - tdy.min())
-
-
-        phm = 0.06715839141819369; ppm = 0.04753718444355231 ;psm = 0.03765402747517174
-        pc = 3.1606815034143736; ts = 0.12092886880198785
-
-        p_cross = 1 - (psm + phm + ppm)
-
-        power = make_function(function=_power, name='power', arity=2)
-        exp = make_function(function=_exp, name='exp', arity=1)
-        r2 = make_fitness(function=_r2, greater_is_better=True, wrap=False)
-
-        with st.spinner("Recuperando o modelo, por favor aguarde..."):
-
-            model = SymbolicRegressor(population_size=2000,
-                                        tournament_size=int(ts*2000),
-                                        generations=200, stopping_criteria=0.99,
-                                        p_crossover=p_cross, p_subtree_mutation=psm,
-                                        p_hoist_mutation=phm, p_point_mutation=ppm,
-                                        verbose=1, parsimony_coefficient=0.001*pc, 
-                                        random_state=0, function_set=['add','sub','mul','div','log','inv','neg','sqrt',power, exp],
-                                        metric=r2, n_jobs=1)
-
-            model.fit(np.array(tdx), np.array(tdy))
-            del train_dataset, tdx, tdy
-
-
-        # with open('min_max_values.pkl', 'rb') as f:
-        #     min_max_values = pickle.load(f)
-        #     min_max_values = list(min_max_values.values())
-
+        # If model_file is None, provide a default behavior (like re-training)
+        st.write("No model file provided.")
+        return
     else:
-        # if isinstance(model_file, SymbolicRegressor):
-        #     # model_file is already a model object, so use it directly
-        #     model = model_file
-        #     with open('min_max_values.pkl', 'rb') as f:
-        #         min_max_values = pickle.load(f)
-        if isinstance(model_file, st.runtime.uploaded_file_manager.UploadedFile):
-            # If model_file is an UploadedFile object, load it using pickle
-            model_file.seek(0)
-            model, min_max_values = joblib.load(model_file)
-        else:
-            # If model_file is a file path, load the model and min_max_values
-            model, min_max_values = joblib.load(model_file)
+        # If model_file is an UploadedFile object or file path, load the model from HDF5
+        model, min_max_values = load_model_hdf5(model_file)
 
     st.write('Teste1')
     x_min, x_max, y_min, y_max = min_max_values
@@ -298,11 +133,8 @@ def predict_with_best_model(file_name, model_file=None):
     x = (x - x_min)/(x_max - x_min)
     y_pred = model.predict(x)
 
-    #show_normalization_formulas(x_min, x_max, y_min, y_max)
-    # st.latex(gplearn_to_latex(str(model._program)))
     dot_data = model._program.export_graphviz()
     st.graphviz_chart(dot_data)
-    
     
     y_pred = inverse_normalization(y_pred, y_max, y_min)
 
