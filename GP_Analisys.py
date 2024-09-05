@@ -6,6 +6,7 @@ import io
 import sys
 import re
 import pickle
+import joblib
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.metrics import r2_score, mean_absolute_percentage_error
 from gplearn.genetic import SymbolicRegressor, SymbolicTransformer
@@ -212,15 +213,14 @@ def execute_sr(file_name):
 
     st.write("Faça o download do modelo:")
 
-    with open('new_model.pkl', 'wb') as file:
-        pickle.dump((est_gp, min_max_values), file)
+    joblib.dump((est_gp, min_max_values), 'new_model.joblib', compress=3)
 
     # Create a download button in Streamlit
-    with open('new_model.pkl', 'rb') as file:
+    with open('new_model.joblib', 'rb') as file:
         st.download_button(
             label="Download do modelo",
             data=file,
-            file_name='new_model.pkl',
+            file_name='new_model.joblib',
             mime='application/octet-stream'
         )
 
@@ -233,7 +233,7 @@ def predict_with_best_model(file_name, model_file=None):
         # with open('est_gp_model_1.pkl', 'rb') as f:
         #     model = pickle.load(f)
 
-        train_dataset = pd.read_excel("Dados_B1_B7.xlsx")
+        train_dataset = pd.read_excel("../Dados_B1_B7.xlsx")
         tdx = train_dataset[train_dataset.columns[:7]]
         tdy = train_dataset[train_dataset.columns[-1]]
 
@@ -263,6 +263,8 @@ def predict_with_best_model(file_name, model_file=None):
                                         metric=r2, n_jobs=1)
 
             model.fit(np.array(tdx), np.array(tdy))
+            del train_dataset, tdx, tdy
+
 
         # with open('min_max_values.pkl', 'rb') as f:
         #     min_max_values = pickle.load(f)
@@ -277,16 +279,12 @@ def predict_with_best_model(file_name, model_file=None):
         elif isinstance(model_file, st.runtime.uploaded_file_manager.UploadedFile):
             # If model_file is an UploadedFile object, load it using pickle
             model_file.seek(0)
-            model, min_max_values = pickle.load(model_file)
+            model, min_max_values = joblib.load(model_file)
         else:
             # If model_file is a file path, load the model and min_max_values
-            with open(model_file, 'rb') as f:
-                model, min_max_values = pickle.load(f)
+            model, min_max_values = joblib.load(model_file)
             
-    st.write("Test1")
     x_min, x_max, y_min, y_max = min_max_values
-    st.write("Test2")
-
     x_min = np.array(x_min)
     x_max = np.array(x_max)
 
@@ -296,10 +294,8 @@ def predict_with_best_model(file_name, model_file=None):
     fosforo.columns = ['X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'P']
     x = fosforo[fosforo.columns[:7]]
     y = fosforo['P']
-    
-    x = (x - x_min)/(x_max - x_min)
-    st.write("Test3")
 
+    x = (x - x_min)/(x_max - x_min)
     y_pred = model.predict(x)
 
     #show_normalization_formulas(x_min, x_max, y_min, y_max)
@@ -314,4 +310,3 @@ def predict_with_best_model(file_name, model_file=None):
     st.write(y_pred)
 
     train_test_model(y, y_pred)
-
