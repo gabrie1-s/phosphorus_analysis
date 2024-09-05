@@ -1,6 +1,7 @@
 import streamlit as st
 import GP_Analisys
-#import poly_regression
+from GP_Analisys import _r2
+import poly_regression
 
 st.title("Modelos para estudo de concentração do fósforo em açudes")
 uploaded_file = st.file_uploader("Faça o upload da sua base de dados")
@@ -21,10 +22,10 @@ if uploaded_file:
         y_n = st.selectbox("Você deseja utilizar um modelo próprio?", options_2)
         
         if y_n == options_2[1]:
-            model_file = st.file_uploader("Faça o upload de um arquivo .joblib", type=["joblib"])
+            model_file = st.file_uploader("Faça o upload de um arquivo .pkl.gz")
             if model_file:
                 GP_Analisys.predict_with_best_model(uploaded_file, model_file) 
-                
+
         elif y_n == options_2[2]:
             GP_Analisys.predict_with_best_model(uploaded_file)
 
