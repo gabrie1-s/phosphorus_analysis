@@ -271,12 +271,12 @@ def predict_with_best_model(file_name, model_file=None):
         #     min_max_values = list(min_max_values.values())
 
     else:
-        if isinstance(model_file, SymbolicRegressor):
-            # model_file is already a model object, so use it directly
-            model = model_file
-            with open('min_max_values.pkl', 'rb') as f:
-                min_max_values = pickle.load(f)
-        elif isinstance(model_file, st.runtime.uploaded_file_manager.UploadedFile):
+        # if isinstance(model_file, SymbolicRegressor):
+        #     # model_file is already a model object, so use it directly
+        #     model = model_file
+        #     with open('min_max_values.pkl', 'rb') as f:
+        #         min_max_values = pickle.load(f)
+        if isinstance(model_file, st.runtime.uploaded_file_manager.UploadedFile):
             # If model_file is an UploadedFile object, load it using pickle
             model_file.seek(0)
             model, min_max_values = joblib.load(model_file)
