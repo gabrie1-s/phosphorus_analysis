@@ -21,7 +21,7 @@ if uploaded_file:
         y_n = st.selectbox("Você deseja utilizar um modelo próprio?", options_2)
         
         if y_n == options_2[1]:
-            model_file = st.file_uploader("Faça o upload de um arquivo .pkl", type=["pkl"])
+            model_file = st.file_uploader("Faça o upload de um arquivo .joblib", type=["joblib"])
             if model_file:
                 GP_Analisys.predict_with_best_model(uploaded_file, model_file) 
                 
