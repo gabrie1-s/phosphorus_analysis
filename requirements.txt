@@ -7,4 +7,3 @@ graphviz
 openpyxl
 joblib
 matplotlib
-pickle
