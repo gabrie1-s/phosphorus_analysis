@@ -227,6 +227,7 @@ def execute_sr(file_name):
 
 def predict_with_best_model(file_name, model_file=None):
     fosforo = pd.read_excel(file_name)
+    st.write(model_file)
 
     if model_file is None:
         # Load the default model and min_max_values from files
@@ -278,6 +279,7 @@ def predict_with_best_model(file_name, model_file=None):
                 min_max_values = cloudpickle.load(f)
         elif isinstance(model_file, st.runtime.uploaded_file_manager.UploadedFile):
             # If model_file is an UploadedFile object, load it using cloudpickle
+            model_file.seek(0)
             with gzip.open(model_file, 'rb') as f:
                 model, min_max_values = cloudpickle.load(f)
         else:
