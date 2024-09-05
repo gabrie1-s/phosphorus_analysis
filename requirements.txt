@@ -5,3 +5,4 @@ scikit-learn
 gplearn
 graphviz
 openpyxl
+joblib
