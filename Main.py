@@ -1,7 +1,6 @@
 import streamlit as st
 import GP_Analisys
 from GP_Analisys import _r2
-import poly_regression
 
 st.title("Modelos para estudo de concentração do fósforo em açudes")
 uploaded_file = st.file_uploader("Faça o upload da sua base de dados")
