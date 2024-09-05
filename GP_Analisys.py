@@ -278,12 +278,10 @@ def predict_with_best_model(file_name, model_file=None):
                 min_max_values = cloudpickle.load(f)
         elif isinstance(model_file, st.runtime.uploaded_file_manager.UploadedFile):
             # If model_file is an UploadedFile object, load it using cloudpickle
-            model_file.seek(0)
             with gzip.open(model_file, 'rb') as f:
                 model, min_max_values = cloudpickle.load(f)
         else:
             # If model_file is a file path, load the model and min_max_values
-            model_file.seek(0)
             with gzip.open(model_file, 'rb') as f:
                 model, min_max_values = cloudpickle.load(f)
             
