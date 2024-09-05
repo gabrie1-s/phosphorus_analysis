@@ -283,6 +283,7 @@ def predict_with_best_model(file_name, model_file=None):
                 model, min_max_values = cloudpickle.load(f)
         else:
             # If model_file is a file path, load the model and min_max_values
+            model_file.seek(0)
             with gzip.open(model_file, 'rb') as f:
                 model, min_max_values = cloudpickle.load(f)
             
